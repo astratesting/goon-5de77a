@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #0A0B0F;
+  --ink-2: #11131A;
+  --ink-3: #1A1D27;
+  --border: #232734;
+  --text: #E6E8EE;
+  --text-dim: #8A90A0;
+  --text-faint: #54586A;
+  --indigo: #5B5BFF;
+  --cyan: #4DD0E1;
+  --teal: #2EE6B0;
+  --amber: #F5B547;
+  --red: #FF5A6B;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--ink);
+}
+
+a {
+  color: var(--indigo);
+  text-decoration: none;
+  transition: color 120ms ease-out;
+}
+
+a:hover {
+  color: #7a7aff;
+}
+
+::selection {
+  background: rgba(91, 91, 255, 0.3);
+  color: var(--text);
+}
+
+input, textarea, select, button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  outline: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+.font-mono {
+  font-family: var(--font-jetbrains-mono), monospace;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Score ring animation */
+@keyframes score-ring {
+  from {
+    stroke-dashoffset: var(--ring-circumference);
+  }
+  to {
+    stroke-dashoffset: var(--ring-offset);
+  }
+}
+
+.score-ring-animate {
+  animation: score-ring 600ms ease-out forwards;
+}
+
+/* Page transition */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.page-enter {
+  animation: fade-in 150ms ease-out;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-faint);
+}
