@@ -2,79 +2,92 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Layout, FolderOpen, Settings, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import {
+  LayoutDashboard,
+  Plus,
+  Settings,
+  ChevronRight,
+  FolderOpen,
+  BarChart3,
+} from "lucide-react";
 
-interface LeftRailProps {
-  children?: React.ReactNode;
+interface NavItem {
+  label: string;
+  href: string;
+  icon: React.ReactNode;
+  active?: boolean;
 }
 
-export default function LeftRail({ children }: LeftRailProps) {
+export default function LeftRail() {
   const pathname = usePathname();
-  const [projectsOpen, setProjectsOpen] = useState(true);
 
-  const navItems = [
-    { href: "/dashboard", label: "Dashboard", icon: Layout },
-    { href: "/generate", label: "New page", icon: FolderOpen },
+  const navItems: NavItem[] = [
+    {
+      label: "Dashboard",
+      href: "/dashboard",
+      icon: <LayoutDashboard size={16} />,
+      active: pathname === "/dashboard",
+    },
+    {
+      label: "QA Report",
+      href: "/dashboard/qa",
+      icon: <BarChart3 size={16} />,
+      active: pathname.startsWith("/dashboard/qa"),
+    },
+    {
+      label: "Settings",
+      href: "/dashboard/settings",
+      icon: <Settings size={16} />,
+      active: pathname.startsWith("/dashboard/settings"),
+    },
   ];
 
   return (
-    <aside className="w-60 border-r border-border bg-ink-2 flex flex-col shrink-0 h-full">
-      <div className="p-4 border-b border-border">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <span className="text-lg font-semibold text-text tracking-tight">goon</span>
+    <aside className="w-50 h-full border-r border-border bg-ink-2 flex flex-col shrink-0">
+      {/* Logo */}
+      <div className="px-4 h-12 flex items-center border-b border-border">
+        <Link href="/" className="text-base font-medium text-text tracking-tight">
+          goon
         </Link>
       </div>
 
-      <nav className="flex-1 p-3 overflow-y-auto">
-        <button
-          onClick={() => setProjectsOpen(!projectsOpen)}
-          className="flex items-center justify-between w-full px-2 py-1.5 text-xs font-medium text-text-faint uppercase tracking-wider hover:text-text-dim transition-colors duration-120"
+      {/* New page button */}
+      <div className="p-3">
+        <Link
+          href="/generate"
+          className="flex items-center gap-2 px-3 py-2 bg-indigo hover:bg-indigo/90 text-white text-sm font-medium rounded-input transition-colors duration-120"
         >
-          <span>Projects</span>
-          <ChevronDown
-            size={12}
-            className={`transition-transform duration-120 ${projectsOpen ? "" : "-rotate-90"}`}
-          />
-        </button>
+          <Plus size={14} />
+          New page
+        </Link>
+      </div>
 
-        {projectsOpen && (
-          <div className="mt-1 space-y-0.5">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-2 px-2 py-2 rounded-input text-sm transition-all duration-120 ${
-                    isActive
-                      ? "bg-ink-3 text-text"
-                      : "text-text-dim hover:text-text hover:bg-ink-3"
-                  }`}
-                >
-                  <Icon size={16} />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-          </div>
-        )}
-
-        {children}
+      {/* Navigation */}
+      <nav className="flex-1 px-2 space-y-0.5 overflow-auto">
+        {navItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`flex items-center gap-2.5 px-3 py-2 rounded-input text-sm transition-colors duration-120 ${
+              item.active
+                ? "bg-ink-3 text-text font-medium"
+                : "text-text-dim hover:text-text hover:bg-ink-3"
+            }`}
+          >
+            {item.icon}
+            {item.label}
+          </Link>
+        ))}
       </nav>
 
+      {/* Footer */}
       <div className="p-3 border-t border-border">
         <Link
           href="/account"
-          className={`flex items-center gap-2 px-2 py-2 rounded-input text-sm transition-all duration-120 ${
-            pathname === "/account"
-              ? "bg-ink-3 text-text"
-              : "text-text-dim hover:text-text hover:bg-ink-3"
-          }`}
+          className="flex items-center gap-2.5 px-3 py-2 rounded-input text-sm text-text-dim hover:text-text hover:bg-ink-3 transition-colors duration-120"
         >
           <Settings size={16} />
-          <span>Account</span>
+          Account
         </Link>
       </div>
     </aside>

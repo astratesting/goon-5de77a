@@ -7,7 +7,10 @@ export const config = {
     "/onboard/:path*",
     "/p/:path*",
     "/account/:path*",
+    "/preview/:path*",
     "/api/pages/:path*",
     "/api/subdomains/:path*",
+    "/api/qa/:path*",
+    "/api/publish/:path*",
   ],
 };

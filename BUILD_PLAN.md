@@ -2,296 +2,418 @@
 
 ## 1. PRODUCT
 
-Goon is an AI landing page builder that takes a single text prompt from a non-technical entrepreneur and produces a complete, styled, mobile-responsive landing page in under 30 seconds. The core value collapses what is normally a $2k–$10k freelancer job (copy + design + responsive QA + hosting) into a typed sentence. The primary user is a solo operator who has a business idea, a domain in mind, and zero tolerance for a CMS — they want to test demand *this afternoon*. The specific pain solved is the gap between "I have a prompt" and "I have a live URL my friends can open on their phone" — currently broken by hallucinated sections, broken mobile layouts, and deployment friction. Two product capabilities close that gap: an automated QA scoring pass that flags hallucinated layout choices and mobile responsiveness regressions *before* the user sees the page, and a one-click publish flow that claims a `*.goon.so` subdomain and serves the page on the public internet without DNS work.
+Goon is an AI page builder for non-technical entrepreneurs who need to ship landing pages fast without learning CSS. The existing product generates pages via AI, scores them for quality, and publishes to a subdomain. This release deepens the **QA loop** so a non-technical user can see — in plain language — whether their page is actually good on mobile (where most traffic lands), and it tightens the **publish flow** with safer subdomain validation, an inline live preview, and copy-paste DNS instructions. The core value: ship a working, mobile-ready page without becoming a developer, with the QA report acting as a trusted checklist the user can act on in one click.
 
 ## 2. WHO IT'S FOR
 
-**ICP:** solo founder / indie hacker / "idea-stage" operator. Age 22–40, technically curious but not a frontend dev. Has launched 0–3 things before. Uses Twitter/X, Product Hunt, Discord. Vocabulary: "ship," "MVP," "validate," "no-code." Time horizon: wants a live page in one sitting, not next week. Has $0–$50/month for tools.
-
-**How this shapes the product:**
-- **One primary CTA per screen.** No nested navigation on the generate flow. The prompt box is the page; the result is the next page.
-- **No jargon.** Words like "component," "responsive breakpoint," "viewport," "DOM" are absent. Words like "publish," "share," "looks good on phone," "score" are present.
-- **Generous defaults, zero config.** No theme pickers on first run. No "choose your font." The system picks; user can tweak after.
-- **Mobile preview is the default preview.** Built for the device they will share from.
-- **Tone of microcopy:** confident, slightly dry, never cute. ("Looks good on iPhone. 91/100." not "🎉 Your page is ready!")
-- **Onboarding = one prompt.** No "tell us about yourself" modal.
+- **Solo founders and side-project builders** who don't know CSS, can't tell why a page "looks broken" on their phone, and get stuck at the publishing step.
+- **Operations-impaired** — they want one thing to do next at any moment, not a settings maze.
+- **Visually trusting, skeptically minded** — they need to *see* the preview, *see* the score, *see* the issues; they won't act on a vague number.
+- Tone: warm, plain-spoken, no jargon. "Tap target too small" is fine. "Insufficient click-area for FATAL viewport interaction" is not.
+- Implications: every screen opens on the single next action; QA labels are human; publish gives a working URL or a copyable fix; no invented logos/quotes anywhere.
 
 ## 3. LOOK & FEEL
 
-**Overall vibe/positioning:** dark analytical interface — feels like a terminal that happens to be a design tool. "Lab instrument," not "creative canvas." The aesthetic signals: *this is a system that measures things*. Every generated page comes with a score, so the parent app should feel like the thing that produces scores. Restrained, dense information, monospace where precision matters, geometric sans where personality matters.
+**Visual system (unchanged palette, tightened usage):**
+- Background base: deep indigo `#0B0F1F` with subtle radial gradient `#0E1430 → #0B0F1F`.
+- Accents: cyan `#22D3EE`, teal `#14B8A6`, violet `#8B5CF6`, coral `#FB7185`, honey `#F5B544` (used for warnings/attention in QA).
+- Surfaces: elevated cards `#121A35` with 1px border `rgba(255,255,255,0.06)`, radius 14px.
+- Type: Manrope (headings, UI, 600/700), Source Sans 3 (body, 400/500). Numeric scores: Manrope 700 tabular.
+- Spacing: 8px base. Section padding 24/32. Max content 1120px.
+- Iconography: stroke icons 1.5px, rounded caps, color `currentColor` so they inherit text. No filled icons.
+- Imagery: gradient/mesh hero accents, screenshot thumbnails of real generated pages (no stock people). No fake customer logos.
+- Motion: 150ms ease-out for hover; 250ms for state changes; respect `prefers-reduced-motion`. Score ring animates from 0 to value over 600ms on mount.
 
-**Color palette (CSS custom properties):**
-- `--ink: #0A0B0F` — page background, near-black with a hint of blue
-- `--ink-2: #11131A` — surface 1 (cards, inputs)
-- `--ink-3: #1A1D27` — surface 2 (raised, hover)
-- `--border: #232734` — hairlines, dividers
-- `--text: #E6E8EE` — primary text
-- `--text-dim: #8A90A0` — secondary text, labels
-- `--text-faint: #54586A` — tertiary, placeholders
-- `--indigo: #5B5BFF` — primary action, focus rings, links
-- `--cyan: #4DD0E1` — scores, data viz accents
-- `--teal: #2EE6B0` — success states, "published" indicator, "passing" QA
-- `--amber: #F5B547` — warnings, soft QA flags
-- `--red: #FF5A6B` — errors, hard QA flags, destructive
+**Screen-by-screen:**
 
-**Typography:**
-- Headings, UI chrome, body: **Space Grotesk** 400/500/600. Tighter tracking (-0.01em) on display sizes.
-- Numerics, scores, code, IDs, timestamps, generated HTML previews: **JetBrains Mono** 400/500.
-- Scale: 12 / 13 / 14 (base) / 16 / 20 / 24 / 32 / 48. Line-height 1.5 body, 1.2 display.
-- Tabular numerals (`font-variant-numeric: tabular-nums`) on all scores and counts.
+### `/` Landing (unchanged system, no rebuild)
+- Keep current dark indigo/cyan hero. Add one new block above footer: **"Built-in QA, before you publish"** — three small cards: Mobile-ready check, Live preview, One-click publish. Each card uses a mini device-frame mock with the QA score ring. No invented metrics.
 
-**Spacing/layout style:**
-- 4px base unit. Spacing scale: 4, 8, 12, 16, 24, 32, 48, 64.
-- 12px corner radius on cards, 6px on inputs/buttons, 0px on tables.
-- 1px hairline borders in `--border` — no shadows on surfaces; depth comes from background tier shifts (`--ink` → `--ink-2` → `--ink-3`).
-- Layout: 1280px max content width, 240px persistent left rail on dashboard routes, full-bleed on the editor and generated previews.
-- Grid: 8px baseline; components snap to multiples of 8.
+### `/login` and `/register`
+- Centered card on gradient backdrop, max-width 420px. Email + password. Below the form: one-line helper text. No "social proof" placeholders. Errors render inline under the field in coral with a small icon.
 
-**Key components:**
-- `PromptInput` — auto-growing textarea (min 1 row, max 8), JetBrains Mono, character count bottom-right, "Generate" button anchored bottom-right of the field.
-- `ScoreBadge` — circular ring (SVG stroke-dasharray) with numeric score in JetBrains Mono; ring color = teal ≥80, amber 60–79, red <60.
-- `QAReportPanel` — collapsible right rail; rows of checks, each with: name, status icon, numeric value, one-line explanation, "show in preview" link.
-- `PreviewFrame` — iframe sandboxing the generated HTML; device toggle (Mobile 375 / Mobile 414 / Tablet 768 / Desktop 1280) as a segmented control above.
-- `PublishDialog` — modal with subdomain input, availability check, claim button, success state showing the live URL.
-- `PageCard` — used in dashboard list: thumbnail (rendered HTML at 320×200), title, status pill, score, last edited, "Open" / "Publish" actions.
-- `TopBar` — 56px tall, logo left, search center, user menu right.
+### `/dashboard` (enhanced)
+- Top bar: "Pages" title, search input (filters by title/subdomain), "+ New page" primary button (cyan).
+- Grid of page cards (3 cols ≥1024px, 2 cols ≥640px, 1 col below). Each card:
+  - Thumbnail (16:10) — first frame of live preview, screenshot.
+  - Title (truncate 1 line) + subdomain pill `yourname.goon.app` (muted).
+  - Score ring (top-right of thumbnail) — large number, label "QA".
+  - Status row: draft / published • last edited "2h ago" • mobile badge (green/amber/red).
+  - Hover: thumbnail sharpens 4%, border becomes cyan 40%.
+- Empty state: illustration of a device with dashed outline, headline "No pages yet", sub "Describe your idea and Goon builds the first version", CTA.
+- Right side (or bottom on mobile): **QA summary card** — average score, # of pages with mobile issues, # unpublished. Links to `/dashboard/qa`.
 
-**Iconography:** Lucide React. 16px in dense lists, 20px in primary actions. Stroke 1.5. Never filled. No emoji as UI icons.
+### `/dashboard/qa` (new — QA Report)
+- Header row: "QA Report" + filter chips: All / Mobile / Accessibility / SEO / Performance. Sort: score asc/desc, last edited.
+- Table (cards on mobile):
+  - Columns: Page, Score (ring + number, color by band: ≥90 cyan, 70–89 teal, 50–69 honey, <50 coral), Mobile badge, # issues, Last scanned, "View" → `/dashboard/qa/[pageId]`.
+- Top summary strip (4 stat tiles): Avg score, Pages scanned, Mobile-ready count, Total open issues.
+- Bulk action: "Re-scan all" (cyan ghost button). Subtle progress bar appears below header while scanning.
 
-**Imagery:** the app itself contains almost no photographic imagery. The generated pages contain whatever the AI produces. Empty states use thin line illustrations in `--text-faint` (custom SVG, not a stock library).
+### `/dashboard/qa/[pageId]` (new — single page QA detail)
+- Two-column on ≥1024px, stacked below.
+- Left (60%): rendered preview of the page inside a device frame toggle (Mobile 375 / Tablet 768 / Desktop 1280). Frame is draggable vertically. The viewport meta tag overlay shows current width.
+- Right (40%): **Score breakdown** panel.
+  - Big score ring (160px) with band label "Good / Needs work / Poor".
+  - Category list: Mobile, Layout, Typography, Accessibility, SEO, Performance. Each row: bar, score, expand chevron.
+  - Expanded row shows issues: each issue = icon (red/coral/amber), title, one-sentence why-it-matters, "Fix" button where auto-fixable, "Show in preview" jumps the device frame to the element and pulses a highlight.
+- Bottom: **Suggestions** list (AI-generated plain-English fixes, max 5, "Regenerate" replaces them).
 
-**Interaction/motion:**
-- 120ms ease-out on hover/focus color shifts.
-- 200ms ease-in-out on the preview frame when switching device widths (the iframe keeps content size, the wrapper resizes).
-- Score ring animates from 0 → final value over 600ms ease-out when a QA pass completes.
-- Page transitions: no slide; just opacity 0→1 over 150ms. Keep it instant-feeling.
-- No skeleton loaders that shimmer for >2s. Use a deterministic "Analyzing layout…" → "Checking mobile…" → "Scoring copy…" staged progress (3 steps, ~1.5s each) so the user knows work is happening.
+### `/dashboard/pages/[id]` (page editor — minimal extension)
+- Existing editor. New: **"QA"** tab next to "Content" / "Style" / "Publish". QA tab shows a compact version of the report (score ring + top 3 issues + "Open full report" link). Tabs share a sticky header with score ring always visible so the user sees the impact of edits.
 
-### Screen-by-screen
+### `/dashboard/pages/[id]/publish` (improved)
+- Stepper at top: 1 Subdomain → 2 Preview → 3 DNS → 4 Publish.
+- **Step 1 — Subdomain:** input with prefix rules shown live. Validation rules:
+  - 3–32 chars, lowercase, `a-z 0-9 -`, cannot start/end `-`, cannot contain `www`, `api`, `admin`, `mail`, `app`. Reserved list enforced server-side.
+  - Live availability check with 300ms debounce, 3-state pill: available (teal), taken (coral with "Taken" + 2 suggestions like `myname2`, `mynamehq`), invalid (honey with reason).
+- **Step 2 — Live preview:** iframe to the unpublished render route, with device toggle (375/768/1280), zoom slider, refresh. Side panel: "This is exactly what visitors will see" + score ring.
+- **Step 3 — DNS:** if on custom domain, show a card with copyable records:
+  - For `goon.app` subdomain: just confirm.
+  - For custom domain: two rows: CNAME `www → cname.goon.app`, A `@ → 178.105.231.73`. Each row has copy button and "✓ Verified" / "Pending" status.
+- **Step 4 — Publish:** primary button "Publish now". On success: confetti-free success state, show URL, "Copy", "Open", "Share". On error: coral banner with the specific error and a "Back to fix" link.
 
-**Screen A — Landing (`/`)**
-- 100vh, centered 720px column on `--ink`.
-- Top: small `goon` wordmark (Space Grotesk 500, 16px, `--text-dim`).
-- Headline: 48px Space Grotesk 600, tracking -0.02em, line-height 1.1. "Type a sentence. Get a landing page." In `--text`.
-- Subhead: 16px Space Grotesk 400, `--text-dim`, max-width 520px. "Goon writes the copy, picks the layout, and checks it on a phone. You ship."
-- PromptInput, full-width, 56px tall, prompt-style: `placeholder="A newsletter for indie founders about pricing. Signup CTA. Indigo + white."`. On submit, button shows spinner and label becomes "Generating…".
-- Below input, three single-line hints in `--text-faint`, 13px: "Average generation: 18s" / "Tested on 4 viewports" / "Free to try, no card required".
-- Footer: "Built by [team]" in `--text-faint`, 12px.
+### `/dashboard/settings`
+- Profile (name, email read-only). Subdomain claim (one per user). Danger zone: delete account (requires typing "DELETE"). No fake "plan" UI.
 
-**Screen B — Sign in / Sign up (`/signin`, `/signup`)**
-- Two-column on ≥1024px: left is a 480px form panel on `--ink-2`, right is a static preview of a generated page (a hard-coded example, not a real one — labeled "example" in faint text).
-- Form: email field, password field, primary button, link to the other flow. No "forgot password" on first version — instead, error state says "If this email exists, we sent a reset link" (no enumeration).
-- Mobile: form only, preview hidden.
-- After signup, redirect to `/onboard` (the prompt page), not `/dashboard`.
+### `/p/[subdomain]` and `/p/[subdomain]/[slug]` (public)
+- Render the published page. Set `viewport` meta with `width=device-width, initial-scale=1, viewport-fit=cover` (validated by QA). Include `<meta name="theme-color">` matching the page's primary.
 
-**Screen C — Onboard / Generate (`/onboard` and `/generate`)**
-- Left rail (240px): logo, "Projects" (collapsible, empty state: "No projects yet"), "Account" link at bottom.
-- Main: empty state on first visit = a single centered PromptInput at 720px wide, plus three "Try one" example chips below it (`"Waitlist for a coffee subscription"`, `"Notion template for hiring"`, `"Personal site for a watercolorist"`).
-- On submit: input area collapses to a compact 80px "generation status" card with the staged progress text, and a `PreviewFrame` appears to the right at 60% width showing a live-updating iframe as the page is generated (server streams partial HTML).
-- When generation completes, the `QAReportPanel` slides in from the right (280px) showing score, list of checks, pass/warn/fail icons. The preview frame is still primary.
-
-**Screen D — Editor (`/p/[id]`)**
-- Top bar: back arrow, editable title (inline, JetBrains Mono), score badge, device toggle, "Publish" button (indigo), "Save" auto-state.
-- Three columns on ≥1280px:
-  - Left (200px): section list. Each generated section is a row with a drag handle, the section's intent ("hero", "features", "pricing", "testimonials", "cta", "footer"), and a "regenerate" icon. Click scrolls the preview to that section.
-  - Center (flex): `PreviewFrame` with device toggle. This is the canvas.
-  - Right (300px): `QAReportPanel` collapsed by default, expands on click. Below it: "Prompt" — the original prompt, read-only, with an "Edit prompt" link that reopens generate.
-- The user does not edit HTML. To change a section, they click "regenerate" and a small inline form appears ("What should change?") with a one-line input and a Regenerate button. The section re-renders in place; the score recalculates.
-
-**Screen E — Publish Dialog (modal over editor)**
-- 480px wide, `--ink-2` background.
-- Title: "Publish to the web" (Space Grotesk 600, 20px).
-- Body:
-  - Subdomain input: `[your-slug]` (text field, JetBrains Mono) `.goon.so` (suffix, dim). Live availability check below: "Available" in teal with check icon, "Taken" in red with x, "Checking…" in faint.
-  - Auto-suggested slug (from page title, slugified).
-  - Checkbox (default on): "Make this page indexable by Google."
-  - Primary button: "Claim & publish" (indigo, full width).
-- On success: the dialog morphs in place to a "Published" state — the live URL is shown in a copy-to-clipboard field, with a "Open ↗" link, and a small teal "Live" pill in the top corner. Below: "Any changes you make will redeploy automatically."
-
-**Screen F — Dashboard (`/dashboard`)**
-- Left rail same as editor.
-- Top bar with search input and a "+ New page" button (indigo).
-- Main: 3-column grid of `PageCard`s (responsive: 1 col <768, 2 col <1280, 3 col ≥1280).
-- Filter row above grid: All / Drafts / Published, and a sort dropdown (Last edited / Score / Title).
-- Empty state: centered illustration + "Your first page is one sentence away." + button to `/generate`.
-
-**Screen G — Public published page (`/p/[id]/live` or `https://[slug].goon.so`)**
-- Served by a route handler. Returns the generated HTML with no parent app chrome. The page is fully self-contained (inline CSS, no external font requests, no JS required).
-- A small footer badge in the bottom-right: "Made with Goon" linking to `/`. The badge is the only product attribution; it's a real link, not invented social proof.
+---
 
 ## 4. USER FLOWS
 
-**Flow 1 — Sign up and generate first page**
-1. User lands on `/`. Sees prompt input. Types a sentence.
-2. Clicking "Generate" without auth → modal: "Create an account to save your work" → redirects to `/signup?returnTo=/generate&prompt=...`.
-3. User signs up with email + password (≥8 chars). No email verification in v1 (note in code: hook for it later).
-4. Auto sign-in via NextAuth credentials. Redirect to `/generate` with the prompt prefilled.
-5. Generation begins. Preview streams. ~15–30s total.
-6. QA score appears, ≥1 issue is likely. User reads the report.
-7. User clicks "Publish" → subdomain dialog → claims slug → live URL shown.
-8. User clicks the live URL in a new tab. Sees the page on their phone. Shares the URL.
+**F1 — Sign up & first page**
+1. `/register` → submit email/password → `/dashboard` (empty state).
+2. Click "+ New page" → modal: text area "Describe your page" + tone chips (Friendly, Bold, Minimal). Submit.
+3. Generation state: progress strip "Building layout… Writing copy… Checking mobile…" (≤30s, polled every 2s).
+4. Lands in editor. **Auto-runs QA** in background; on complete, score ring in header animates in and toast: "Built and scored. Tap to review" → opens QA detail.
 
-States covered: empty input (button disabled), invalid email (inline error), password too short, taken slug (regenerate suggestion), generation error (toast + retry), publish network error (retry button, keeps modal open), user already has 5 pages (soft cap, modal says "Free tier: 5 pages. Upgrade coming soon.").
+**F2 — Edit → re-score**
+1. Edit content in editor.
+2. Save (auto-save every 5s of idle).
+3. Re-score triggered on save. Score ring transitions to new value with delta "+3" / "−7" pill for 3s.
+4. If score drops below 70, the QA tab shows a honey dot; clicking opens the detail with the offending category expanded.
 
-**Flow 2 — Return and edit**
-1. User returns to `/dashboard`. Sees page card with score and "Draft" pill.
-2. Clicks card → editor opens. Sees score, preview, sections.
-3. Clicks "regenerate" on the hero section, types "make the headline punchier." Section updates. Score recalculates.
-4. Clicks "Publish" again (already has a slug). Modal says "Redeploy to [slug].goon.so?" with one button.
-5. Live page updates within 5s.
+**F3 — Publish (subdomain path)**
+1. Editor → "Publish" tab → Step 1: type `myidea` → debounced check → teal "Available".
+2. Step 2: preview loads, toggle to mobile, confirm it looks right.
+3. Step 3: skipped (subdomain on `goon.app`).
+4. Step 4: "Publish now" → 1.5s simulate → success card with `myidea.goon.app`, Copy/Open buttons.
+5. If user later adds a custom domain, Step 3 reappears in `/dashboard/pages/[id]/publish` with DNS records.
 
-**Flow 3 — Sign in (returning user)**
-1. `/signin`. Email + password. On error: "Email or password is incorrect" (no enumeration).
-2. On success: redirect to `/dashboard` (or `returnTo` if present).
+**F4 — Publish (custom domain path)**
+1. Step 1 same.
+2. Step 2 same.
+3. Step 3: enter `mydomain.com` → records shown, copy buttons, "Verify" button (calls DNS check API; on fail, show which record failed with the actual values queried).
+4. Step 4: "Publish" enabled only when Step 3 verified.
 
-**Flow 4 — QA flag response**
-1. User sees a red flag in the QA panel: "Hero CTA is offscreen on 375px viewport."
-2. Clicks the flag. Preview scrolls to the hero and overlays a translucent red mask on the offending element with a label "CTA not visible at 375px."
-3. User clicks "regenerate" on that section. New version generated. Flag re-checked. If pass, badge turns teal.
+**F5 — QA Report review**
+1. `/dashboard/qa` → see all pages sorted by score asc.
+2. Click a row → `/dashboard/qa/[pageId]` → expand Mobile category → "Show in preview" highlights a too-small button at 375px.
+3. Click "Fix" (auto-fix: bumps button padding to meet 44px) → preview re-renders → score updates with delta.
 
-## 5. PAGES/ROUTES
+**F6 — Errors & edge states**
+- Subdomain taken: suggestions appear; can pick one with one click.
+- Preview fails to load: retry button + last error in muted text; "Open raw HTML" link.
+- DNS check timeout: "We couldn't reach your DNS. Verify manually or try again in 60s." (no fake spinner).
+- QA scan fails for a page: row shows "Scan failed" with a small re-scan icon. No silent failure.
 
-| Route | Purpose | Layout | Main UI |
-|---|---|---|---|
-| `/` | Marketing landing | Centered 720px column, no nav | Wordmark, headline, PromptInput, hints |
-| `/signup` | Account creation | Two-col (form + preview) on ≥1024 | Email, password, submit |
-| `/signin` | Account login | Same as signup | Email, password, submit |
-| `/generate` | Create a new page | Left rail + main with prompt area | PromptInput, example chips, PreviewFrame (post-submit) |
-| `/onboard` | First-run alias of `/generate` | Same as `/generate` | Same |
-| `/dashboard` | List of user's pages | Left rail + grid of PageCards | Search, filter, sort, "+ New page" |
-| `/p/[id]` | Editor for a specific page | Three-column: sections, preview, QA | Top bar with score + device toggle + publish, section list, PreviewFrame, QAReportPanel |
-| `/p/[id]/live` | Server-rendered published HTML | None — raw HTML response | The generated page, plus footer badge |
-| `/api/auth/[...nextauth]` | NextAuth handler | n/a | Credentials provider |
-| `/api/pages` | CRUD for pages | n/a | POST create, GET list |
-| `/api/pages/[id]` | Single page ops | n/a | GET, PATCH (title, prompt), DELETE |
-| `/api/pages/[id]/generate` | Trigger AI generation, stream partial HTML | n/a | POST; returns SSE |
-| `/api/pages/[id]/sections/[sectionId]/regenerate` | Regenerate a section | n/a | POST with `{instruction}` |
-| `/api/pages/[id]/qa` | Run QA scorer, return report | n/a | GET (cached), POST (re-run) |
-| `/api/pages/[id]/publish` | Claim subdomain, mark live | n/a | POST `{slug}`; idempotent |
-| `/api/subdomains/check` | Slug availability | n/a | GET `?slug=x` |
-| `/api/og/[id]` | Optional: open graph image for shared links | n/a | Returns PNG |
-| `/account` | Email change, sign out, delete account | Left rail + simple form | Email field, danger zone |
-| `https://[slug].goon.so/*` | Public published page | None — served by edge | Generated HTML |
+---
+
+## 5. PAGES / ROUTES
+
+| Route | Purpose | Layout / Key elements |
+|---|---|---|
+| `/` | Marketing landing | Existing. Add "Built-in QA" 3-card block. |
+| `/login` | Sign in | Centered card, indigo gradient bg. |
+| `/register` | Sign up | Same shell as login, with name field. |
+| `/dashboard` | Pages overview | Grid of page cards + QA summary card. |
+| `/dashboard/qa` | QA Report list | Filter chips, table/cards, summary tiles. |
+| `/dashboard/qa/[pageId]` | QA detail | Device-framed preview + score breakdown + suggestions. |
+| `/dashboard/pages/new` | New page modal (overlay) | Prompt + tone chips. |
+| `/dashboard/pages/[id]` | Editor | Existing + QA tab. |
+| `/dashboard/pages/[id]/publish` | Publish flow | 4-step stepper. |
+| `/dashboard/settings` | Account settings | Profile, subdomain claim, danger zone. |
+| `/api/auth/[...nextauth]` | NextAuth v5 handler | Existing. |
+| `/api/qa/scan` | POST: run QA on a page | Returns score + issues. |
+| `/api/qa/pages` | GET: list pages with scores | Cached 30s. |
+| `/api/publish/check-subdomain` | GET: availability + rules | Debounced from UI. |
+| `/api/publish/preview` | GET: render unpublished page | Returns HTML + assets map. |
+| `/api/publish/dns-check` | POST: verify DNS | Returns per-record status. |
+| `/api/publish/commit` | POST: finalize publish | Returns public URL. |
+| `/p/[subdomain]` | Public published page | SSR with viewport meta. |
+| `/p/[subdomain]/[slug]` | Public page slug | SSR. |
+| `/preview/[pageId]` | Authenticated preview render | Used by Publish step 2. |
+
+---
 
 ## 6. CORE FEATURES
 
-### 6.1 Auth (NextAuth.js v5, credentials)
-- Email + password (bcrypt, 10 rounds). Password min 8 chars enforced client + server.
-- JWT session strategy, 30-day expiry, refreshed on activity.
-- `auth()` helper used in route handlers and server components for gating.
-- Middleware (`middleware.ts`) protects `/dashboard`, `/p/*`, `/account`, `/generate`, `/onboard`, `/api/pages*`, `/api/subdomains*`. Unauthenticated requests to API return 401; to pages redirect to `/signin?returnTo=...`.
-- Sign out clears the session cookie and redirects to `/`.
+### 6.1 Enhanced QA Scoring Engine (`lib/qa/`)
+- **Inputs:** page HTML, parsed CSS (via `postcss` or `cheerio` + regex on `<style>`), computed list of interactive elements, image URLs.
+- **Categories & weights:** Mobile 35, Layout 15, Typography 10, Accessibility 15, SEO 15, Performance 10. Each yields 0–100; final is weighted average rounded.
 
-### 6.2 Page generation
-- User submits a prompt (1–2000 chars). Server validates length, creates a `Page` row with `status: 'generating'`, then calls the AI in a streaming fashion.
-- The AI returns a structured JSON describing sections (array of `{id, type, content}` where types are `hero | features | pricing | testimonials | cta | footer | custom`). The route streams the parsed sections to the client via SSE; the client renders the preview incrementally by composing a full HTML document from a small set of section templates, filling in the AI's content.
-- The composed HTML is stored on the `Page` row as `html` and `sections_json`. This is the source of truth for both editor preview and public serving.
-- If the AI call fails, `status: 'error'`, error stored, UI shows "Generation failed. Try again or edit your prompt."
+**Mobile checks (the focus of this release):**
+- `viewport-meta` — must contain `width=device-width` and not `user-scalable=no` (warn, not fail). Missing → score 0 for mobile category.
+- `responsive-css` — scan inline + linked `<style>` for `media (min-width|max-width)`, `clamp(`, `%`/`vw`/`vh` units, flex/grid. Flag any element with fixed `width` in px that exceeds 360 and has no responsive counterpart. Hard fail if no responsive tokens detected on a > 600px hero block.
+- `touch-targets` — extract `<a>`, `<button>`, `[role=button]`, `<input>`; compute bounding box (heuristic: padding-y from CSS, fallback 12px). Flag any < 44×44 px (Apple HIG) or < 48×48 dp (Material). Severity scales with how small.
+- `image-scaling` — every `<img>` must have either `srcset`, `sizes`, `max-width:100%`, or `width` attribute. Flag `<img>` wider than container (computed by parsing parent width or defaulting to 375). Flag missing `loading="lazy"` on below-fold images (best-effort: anything after 2nd viewport).
+- `horizontal-overflow` — render DOM in headless check (or static heuristic: sum of `min-width` declarations; any `width: 100vw`; negative margins) to predict horizontal scroll at 375px. Any prediction → fail.
+- `font-sizes` — minimum body text 16px. Flag any computed `font-size < 14px` for body, `<12px` for any text.
+- `meta-viewport-zoom` — warn if `maximum-scale=1` (accessibility concern).
 
-### 6.3 QA scoring system
+**Other categories:**
+- **Layout:** sections have consistent max-width, no overlapping fixed elements, no z-index > 50 outside modals.
+- **Typography:** heading hierarchy (one h1, no skipped levels), line-height 1.2–1.6 for body.
+- **Accessibility:** color contrast (parse colors, compute WCAG ratio for text on background pairs flagged in component list), alt text on images, form labels, focus-visible styles present.
+- **SEO:** `<title>` 30–60 chars, `<meta name="description">` 70–160, single `<h1>`, canonical present, OpenGraph tags.
+- **Performance:** total HTML size < 150KB, image count < 20, no render-blocking external scripts on initial render, no fonts > 2.
 
-Two passes run after generation (and after any section regeneration), each in ≤3s target.
+**Output shape:**
+```ts
+type QAResult = {
+  pageId: string;
+  scannedAt: string;
+  overall: number;          // 0-100
+  band: 'good' | 'fair' | 'poor';
+  categories: { id: string; score: number; issues: QAIssue[] }[];
+  suggestions: string[];    // plain English, max 5
+};
+type QAIssue = {
+  id: string;               // e.g. 'mobile.touch-target'
+  severity: 'fail' | 'warn' | 'info';
+  selector?: string;        // for "Show in preview"
+  title: string;            // "Tap target too small"
+  detail: string;           // one sentence
+  autoFix?: { action: 'bump-padding' | 'add-viewport' | 'lazy-load' | 'set-srcset'; params?: any };
+};
+```
 
-**Pass A — Hallucinated layout detection (static analysis)**
-- Parse the generated HTML with `linkedom` or `parse5` in a Node worker.
-- Checks (each returns `{name, status: 'pass'|'warn'|'fail', value, detail}`):
-  1. **Section count** — warn if <2, fail if >8.
-  2. **Empty section** — fail if any section's primary text node is empty or whitespace-only.
-  3. **Duplicate section types** — warn if two sections of the same type appear back-to-back.
-  4. **Broken links** — fail if any `<a href>` is empty, `javascript:`, or `{{placeholder}}`-style template leftover.
-  5. **Image src validity** — fail if any `<img>` has `src` starting with `data:` longer than 2KB (likely hallucinated) or is empty, or is an `https://` URL that 404s on a HEAD request (sampled, max 5 checks).
-  6. **Lorem ipsum / template markers** — fail if text contains `lorem ipsum`, `{{`, `}}`, `[your`, or `[insert`.
-  7. **Unrendered prompt echo** — warn if the prompt string itself appears verbatim in the body (sign the AI echoed input).
-- Score contribution: each fail -15, warn -5, pass 0, normalized to 0–100 from a base of 100, clamped at 0.
+**Auto-fix actions** (limited set, safe): bump button padding to 12px 20px; inject `<meta name="viewport">`; add `loading="lazy"`; add `srcset` from same URL at 1x/2x hint.
 
-**Pass B — Mobile responsiveness (headless render)**
-- Spawn a headless browser (Playwright, headless Chromium) only in this pass. To keep cost down, run on a worker process with a 5s per-page budget and a 2-instance pool.
-- Set viewport to 375×812 (iPhone 13) and 768×1024 (iPad). For each viewport, take a full-page screenshot, measure:
-  1. **Horizontal overflow** — `document.documentElement.scrollWidth > viewport.width` → fail.
-  2. **CTA visibility** — locate the first `<a>` or `<button>` whose text matches `/sign\s*up|get\s*started|try|buy|start|join|claim|subscribe|download/i`. If its bounding rect is not within the first 812px of the page → fail with "Primary CTA is below the fold on iPhone 13."
-  3. **Text legibility** — compute min computed `font-size` of any visible text node; fail if <12px.
-  4. **Touch target size** — collect all interactive elements (`<a>`, `<button>`, `input`); fail if any has width or height <44px.
-  5. **Image aspect ratio** — fail if any `<img>` has `naturalWidth === 0` (broken) or computed `height: 0`.
-- Score contribution: 40 points for mobile pass, 20 for tablet pass, 40 distributed equally across the 5 checks (8 each). If a check fails on a viewport, those points are lost.
+### 6.2 QA Report Dashboard
+- Server component fetches list of pages with their last `QAResult`. Aggregation: avg, mobile-ready count (mobile score ≥ 80), total open issues (count of `fail`).
+- Filters: category (chips), sort (score asc default).
+- Re-scan: POST `/api/qa/scan` with `pageId` or `all=true`. Server queues and returns job id; client polls or uses SSE. For this release, simple 1.5s simulated scan with progress bar; actual scan runs server-side on the same data the editor uses.
 
-**Combined score** = `0.4 * A + 0.6 * B`, rounded to integer. The score and full report (with `pass|warn|fail`, raw values, and the exact pixel measurements) are stored on the `Page` row as `qa_score` and `qa_report_json`.
+### 6.3 QA Detail View
+- Device frame: pure CSS, no iframes for the static screenshot (render an SVG/HTML mock with the page's sections stacked at the chosen width). For real HTML preview, embed in sandboxed iframe with `sandbox="allow-same-origin"`.
+- "Show in preview" scrolls the iframe content and overlays a pulsing outline on the matched selector (uses `postMessage` to a small script in the preview route).
+- "Fix" buttons call `/api/qa/autofix` with `{ pageId, issueId }`; on success, re-scan and animate score.
 
-The QA pass is exposed via `GET /api/pages/[id]/qa` (returns cached) and `POST` (forces re-run). The editor triggers re-run automatically on any HTML change; the dashboard shows the last cached score.
+### 6.4 Publish — Subdomain Validation
+- Client + server share the same rule set in `lib/publish/subdomain.ts`.
+- Reserved list: `www, api, admin, mail, app, dashboard, cdn, static, assets, goon, support, status, blog, help, docs, auth, login, register, signup, signin`.
+- Server check: in-memory LRU + DB unique constraint. On collision, return up to 3 suggestions via algorithm: append 2, append `hq`, prepend `get`.
 
-### 6.4 Publish to web — subdomain claiming
-- On publish, client calls `POST /api/pages/[id]/publish` with `{slug}`.
-- Server validates slug: `^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$`. Reserved list blocks: `www, api, admin, app, dashboard, signin, signup, account, goon, mail, status, help, support, docs, blog, static, cdn, files`.
-- Slug uniqueness enforced by a unique index on `Page.subdomain` (nullable; only published pages have one set).
-- If available: transaction updates `Page.status='published'`, sets `subdomain`, sets `published_at`. Returns the public URL.
-- Wildcard DNS: `*.goon.so` points to the app. Edge middleware (`middleware.ts` with a matcher excluding `/_next/*` and `/api/*`) reads the `Host` header, extracts the subdomain, looks up the `Page` by `subdomain`, and rewrites the request to `/p/[id]/live`. If not found, rewrites to `/404` (a custom 404 styled in the parent app).
-- The `/p/[id]/live` route handler returns the stored `html` with `Content-Type: text/html; charset=utf-8`, `Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=300`. Includes a `<meta name="goon-id" content="[id]">` for analytics.
-- The "Made with Goon" badge is appended server-side just before `</body>` if `Page.badge_enabled !== false` (user can disable in account settings).
-- Republishing is idempotent: same slug, same page, just a `published_at` update.
+### 6.5 Publish — Live Preview
+- New route `/preview/[pageId]` returns the page's compiled HTML with relative asset paths rewritten to absolute. Auth-gated (must be owner).
+- Publish step 2 iframes it; device toggle sets iframe width via wrapper.
 
-### 6.5 Dashboard
-- Server component fetches pages via the data access layer; client component handles filter/sort/search state via URL params.
-- Search is a simple `ILIKE` on title and prompt (Postgres) — no need for full-text in v1.
-- Page cards show: title, status pill (Draft / Published / Error), score badge, last edited (relative time in JetBrains Mono: "2h", "yesterday", "Mar 4"), and a thumbnail rendered by an HTML-to-image service (defer: in v1 show a colored block with the first letter of the title in Space Grotesk 600).
+### 6.6 Publish — DNS Instructions
+- Detect if user is on free subdomain (`*.goon.app`) → skip Step 3.
+- Custom domain → render two record cards with copy buttons. `Verify` calls `/api/publish/dns-check` which does `dns.resolveCname` / `dns.resolve4` (Node) on the host; returns `{ record, expected, actual, ok }` per record.
+- Show actual vs expected diff on failure so the user knows what to change.
 
-### 6.6 Section regeneration
-- In the editor, clicking the regenerate icon on a section opens a small inline form.
-- POST `/api/pages/[id]/sections/[sectionId]/regenerate` with `{instruction}`. The server calls the AI with the full page context + the instruction, gets back a single section replacement, splices it into the stored HTML and `sections_json`, then triggers a QA re-run.
-- The client receives the new HTML and the new QA report via the response; updates state without a full reload.
+### 6.7 Editor QA Tab
+- Reads latest `QAResult` for the page. Renders score ring + top 3 issues. "Open full report" deep-links to `/dashboard/qa/[pageId]`.
+- Re-scan button runs a scan and shows a 600ms determinate progress.
 
-### 6.7 Account
-- View email, sign out, delete account. Delete cascades: all pages, all `qa_reports`, all `subdomains` released (set to null). Returns to `/`.
+### 6.8 Caching & Invalidation
+- QA results stored in `qa_results` table, keyed by `pageId` + `version` (incremented on save). Cache TTL 5 min. Editor save → invalidate + new version.
+
+---
 
 ## 7. DATA MODEL
 
-**Database:** Postgres (via Prisma). The `subdomain` column on `Page` carries the unique constraint; a partial unique index is used so only published pages participate in uniqueness.
+```ts
+// users (NextAuth-managed; extend in prisma)
+User {
+  id: string (cuid)
+  email: string
+  name: string?
+  image: string?
+  createdAt: DateTime
+  // app-specific
+  claimedSubdomain: string?  // unique, one per user, optional
+}
 
+Page {
+  id: string (cuid)
+  ownerId: string → User.id
+  title: string
+  prompt: string               // original generation prompt
+  tone: 'friendly' | 'bold' | 'minimal'
+  html: string                 // generated/edited HTML
+  css: string                  // generated/edited CSS
+  meta: Json                   // { description, ogImage, themeColor }
+  version: number              // increments on save
+  status: 'draft' | 'published' | 'archived'
+  createdAt: DateTime
+  updatedAt: DateTime
+  // relations
+  subdomain: Subdomain?
+  publish: PublishRecord?
+  qaResults: QAResult[]
+}
+
+Subdomain {
+  id: string
+  pageId: string → Page.id
+  host: string                 // e.g. "myidea" or "myidea.goon.app" (stored as full host)
+  isCustom: boolean
+  verified: boolean
+  createdAt: DateTime
+  @@unique([host])
+}
+
+PublishRecord {
+  id: string
+  pageId: string → Page.id
+  publishedAt: DateTime
+  publishedVersion: number
+  dnsRecords: Json?            // [{ type, name, value }] for custom domains
+}
+
+QAResult {
+  id: string
+  pageId: string → Page.id
+  version: number              // matches Page.version at scan time
+  overall: number
+  band: 'good' | 'fair' | 'poor'
+  categories: Json             // QAResult.categories
+  suggestions: string[]        // stored as Json string[]
+  scannedAt: DateTime
+  @@index([pageId, scannedAt])
+}
 ```
-User
-  id            uuid pk
-  email         text unique not null
-  password_hash text not null
-  created_at    timestamptz default now()
-  badge_enabled boolean default true
 
-Page
-  id              uuid pk
-  user_id         uuid fk User.id not null
-  title           text not null default 'Untitled page'
-  prompt          text not null
-  status          text not null  -- 'draft' | 'generating' | 'published' | 'error'
-  html            text            -- composed HTML document
-  sections_json   jsonb           -- array of {id, type, content}
-  qa_score        int             -- 0..100, nullable until first run
-  qa_report_json  jsonb           -- {checks: [...], ran_at}
-  subdomain       text            -- nullable; unique when present and status='published'
-  published_at    timestamptz
-  created_at      timestamptz default now()
-  updated_at      timestamptz default now()
-  error           text            -- populated when status='error'
+Relationships: User 1—* Page, Page 1—1 Subdomain, Page 1—* QAResult, Page 1—* PublishRecord.
 
-  -- partial unique index:
-  -- CREATE UNIQUE INDEX page_subdomain_unique
-  --   ON "Page"(subdomain) WHERE subdomain IS NOT NULL AND status='published';
-
-Session  (NextAuth JWT-backed, no DB table needed for v1; switch to DB sessions later if required)
-```
-
-Relationships: `User 1—* Page` (cascade delete).
-
-Indexes: `Page(user_id, updated_at desc)` for dashboard, `Page(subdomain) where subdomain is not null and status='published'` for the wildcard lookup.
+---
 
 ## 8. AUTH
 
-**NextAuth.js v5** with the **Credentials provider**, JWT session strategy. No Clerk anywhere. No third-party OAuth in v1 (defer Google/GitHub to a later iteration).
+- **NextAuth.js v5** (existing). Providers: credentials (email + bcrypt) + optional GitHub (existing).
+- Session strategy: JWT for edge middleware compatibility; database sessions not required.
+- Middleware (`middleware.ts`) protects `/dashboard/**`, `/api/qa/**` (write), `/api/publish/**` (write), `/preview/**`. Public: `/`, `/login`, `/register`, `/p/**`, `/api/auth/**`.
+- Owner check: every mutating API verifies `session.user.id === resource.ownerId` via a `withAuth(handler)` wrapper.
+- No Clerk anywhere. No third-party auth UI components.
 
-- File: `auth.ts` at the repo root exports `auth`, `handlers`, `signIn`, `signOut` per the v5 convention.
-- The credentials provider looks up the user by email, compares bcrypt hash, returns the user object on success. On failure throws `CredentialsSignin` so the UI can show the generic error.
-- Session callback adds `user.id` to the session token.
-- `middleware.ts` uses `auth` from `auth.ts` to gate protected routes.
-- Sign up is a custom flow in `/signup` that calls a server action which creates the `User`, then calls `signIn('credentials', { email, password, redirect: false })` to issue the session.
-- Password storage: `bcryptjs` (pure JS, no native build issues). Hashing in a server action only.
-- CSRF: NextAuth handles it. State-changing API routes still verify the session; no extra CSRF token needed for same-origin.
+---
 
-## 9. FILES
+## 9. CORE FEATURES → BUILD MAPPING
 
-FILES: ["app/page.tsx","app/(auth)/signup/page.tsx","app/(auth)/signin/page.tsx","app/(auth)/layout.tsx","app/(app)/generate/page.tsx","app/(app)/onboard/page.tsx","app/(app)/dashboard/page.tsx","app/(app)/dashboard/page-client.tsx","app/(app)/p/[id]/page.tsx","app/(app)/p/[id]/editor-client.tsx","app/(app)/p/[id]/live/route.ts","app/(app)/p/[id]/not-found.tsx","app/(app)/account/page.tsx","app/(app)/layout.tsx","app/api/auth/[...nextauth]/route.ts","app/api/pages/route.ts","app/api/pages/[id]/route.ts","app/api/pages/[id]/generate/route.ts","app/api/pages/[id]/sections/[sectionId]/regenerate/route.ts","app/api/pages/[id]/qa/route.ts","app/api/pages/[id]/publish/route.ts","app/api/subdomains/check/route.ts","middleware.ts","auth.ts","auth.config.ts","lib/db.ts","lib/ai.ts","lib/ai/generate-page.ts","lib/ai/regenerate-section.ts","lib/qa/score.ts","lib/qa/checks/layout.ts","lib/qa/checks/mobile.ts","lib/qa/runner.ts","lib/pages/compose-html.ts","lib/pages/slug.ts","lib/pages/sections.ts","lib/subdomains/reserved.ts","lib/auth/password.ts","components/PromptInput.tsx","components/ScoreBadge.tsx","components/QAReportPanel.tsx","components/QAFlagOverlay.tsx","components/PreviewFrame.tsx","components/DeviceToggle.tsx","components/PublishDialog.tsx","components/PageCard.tsx","components/TopBar.tsx","components/LeftRail.tsx","components/GenerationProgress.tsx","components/StatusPill.tsx","components/EmptyState.tsx","components/ui/Button.tsx","components/ui/Input.tsx","components/ui/Textarea.tsx","components/ui/Modal.tsx","components/ui/SegmentedControl.tsx","components/ui/Toast.tsx","prisma/schema.prisma","prisma/seed.ts","styles/globals.css","tailwind.config.ts","public/favicon.svg","app/404/page.tsx","app/icon.svg","app/opengraph-image.tsx"]
+- **QA engine** → `lib/qa/scan.ts`, `lib/qa/rules/mobile.ts`, `lib/qa/rules/accessibility.ts`, `lib/qa/rules/seo.ts`, `lib/qa/rules/typography.ts`, `lib/qa/rules/performance.ts`, `lib/qa/rules/layout.ts`, `lib/qa/autofix.ts`, `lib/qa/score.ts`.
+- **QA Report UI** → `app/dashboard/qa/page.tsx`, `app/dashboard/qa/[pageId]/page.tsx`, `components/qa/ScoreRing.tsx`, `components/qa/CategoryRow.tsx`, `components/qa/IssueRow.tsx`, `components/qa/DeviceFrame.tsx`, `components/qa/SummaryTiles.tsx`.
+- **Editor QA tab** → `app/dashboard/pages/[id]/qa-tab.tsx`.
+- **Publish flow** → `app/dashboard/pages/[id]/publish/page.tsx`, `components/publish/Stepper.tsx`, `components/publish/SubdomainInput.tsx`, `components/publish/PreviewPane.tsx`, `components/publish/DnsCard.tsx`, `components/publish/SuccessCard.tsx`, `lib/publish/subdomain.ts`, `lib/publish/dns.ts`.
+- **Public render** → `app/p/[subdomain]/page.tsx`, `app/p/[subdomain]/[slug]/page.tsx`, `app/preview/[pageId]/page.tsx`.
+- **API** → `app/api/qa/scan/route.ts`, `app/api/qa/pages/route.ts`, `app/api/qa/autofix/route.ts`, `app/api/publish/check-subdomain/route.ts`, `app/api/publish/preview/route.ts`, `app/api/publish/dns-check/route.ts`, `app/api/publish/commit/route.ts`.
+- **Data** → `prisma/schema.prisma` (add models), `lib/db.ts`.
+- **Auth glue** → `auth.ts`, `middleware.ts`, `lib/auth/withAuth.ts`.
+
+---
+
+## 10. ACCEPTANCE
+
+A reviewer should be able to confirm each of the following as **done and working**:
+
+**Auth & shell**
+- [ ] Sign up, sign in, sign out work; session persists; protected routes redirect to `/login`.
+- [ ] No Clerk in `package.json` or imports; NextAuth v5 only.
+- [ ] Landing page renders the existing dark indigo/cyan design unchanged, plus the new "Built-in QA" 3-card section.
+
+**QA engine**
+- [ ] Scanning a page that lacks a viewport meta returns mobile score 0 and an issue titled "Missing viewport meta" with `autoFix: add-viewport`.
+- [ ] A page with a 30×30 px button on mobile triggers a "Tap target too small" issue with the button's selector.
+- [ ] An `<img>` with no `srcset`, `sizes`, or `max-width:100%` triggers an "Image may overflow on mobile" issue; offers `autoFix: set-srcset` and `loading-lazy`.
+- [ ] Detects at least one responsive token (`@media`, `clamp(`, `vw/vh`, or `%`) and marks `responsive-css` passed; a page of only fixed px widths fails it.
+- [ ] Predicts horizontal overflow when `width: 100vw` or a fixed-width section > 375px is present.
+- [ ] Final score is a weighted average of the 6 categories, rounded, and band matches thresholds (≥90 good, 70–89 fair, <70 poor).
+- [ ] All issues have a selector (or `null` for global) and a one-sentence `detail`.
+
+**QA Report**
+- [ ] `/dashboard/qa` lists all owner pages with their latest score and mobile badge.
+- [ ] Filter chip "Mobile" shows only pages with at least one mobile-category issue.
+- [ ] Sort by score ascending puts the lowest first.
+- [ ] Summary tiles show correct counts; "Re-scan all" updates at least one row.
+- [ ] `/dashboard/qa/[pageId]` shows device-frame preview at 375/768/1280; "Show in preview" highlights the matched element with a pulsing outline.
+- [ ] "Fix" on an auto-fixable issue updates the page HTML, re-scans, and the score ring animates to the new value with a delta pill.
+
+**Publish**
+- [ ] Subdomain input rejects `WWW`, `api`, `myname!`, `a`, and a 40-char string with inline reasons; accepts `my-idea-2`.
+- [ ] Debounced availability check returns available/taken/invalid within 500ms of typing.
+- [ ] On taken, at least 2 suggestions appear and are clickable to fill.
+- [ ] Publish step 2 loads `/preview/[pageId]` in an iframe; device toggle changes visible width.
+- [ ] For a custom domain, Step 3 shows CNAME and A records with working copy buttons and a "Verify" that returns real DNS results (ok or per-record diff).
+- [ ] Step 4 is disabled until Step 3 verified; on success, the public URL renders at `/p/[subdomain]` with a correct viewport meta tag.
+
+**Honesty**
+- [ ] No invented customer quotes, logos, user counts, ratings, or revenue figures anywhere in the UI.
+- [ ] Empty states are honest ("No pages yet", not "Your first amazing page is one click away!").
+- [ ] Copy uses plain language; no developer jargon in user-facing strings.
+
+**Build**
+- [ ] `pnpm build` succeeds; `pnpm typecheck` clean; no `any` leaks in QA types.
+- [ ] `pnpm dev` serves the app at the configured port; preview link from prior deploy still works as a smoke test.
+
+---
+
+## FILES
+
+```json
+[
+  "prisma/schema.prisma",
+  "lib/db.ts",
+  "lib/qa/scan.ts",
+  "lib/qa/score.ts",
+  "lib/qa/autofix.ts",
+  "lib/qa/rules/mobile.ts",
+  "lib/qa/rules/typography.ts",
+  "lib/qa/rules/accessibility.ts",
+  "lib/qa/rules/seo.ts",
+  "lib/qa/rules/performance.ts",
+  "lib/qa/rules/layout.ts",
+  "lib/publish/subdomain.ts",
+  "lib/publish/dns.ts",
+  "lib/publish/render.ts",
+  "lib/auth/withAuth.ts",
+  "auth.ts",
+  "middleware.ts",
+  "app/dashboard/page.tsx",
+  "app/dashboard/qa/page.tsx",
+  "app/dashboard/qa/[pageId]/page.tsx",
+  "app/dashboard/pages/[id]/page.tsx",
+  "app/dashboard/pages/[id]/qa-tab.tsx",
+  "app/dashboard/pages/[id]/publish/page.tsx",
+  "app/dashboard/settings/page.tsx",
+  "app/p/[subdomain]/page.tsx",
+  "app/p/[subdomain]/[slug]/page.tsx",
+  "app/preview/[pageId]/page.tsx",
+  "app/api/qa/scan/route.ts",
+  "app/api/qa/pages/route.ts",
+  "app/api/qa/autofix/route.ts",
+  "app/api/publish/check-subdomain/route.ts",
+  "app/api/publish/preview/route.ts",
+  "app/api/publish/dns-check/route.ts",
+  "app/api/publish/commit/route.ts",
+  "components/qa/ScoreRing.tsx",
+  "components/qa/CategoryRow.tsx",
+  "components/qa/IssueRow.tsx",
+  "components/qa/DeviceFrame.tsx",
+  "components/qa/SummaryTiles.tsx",
+  "components/qa/PreviewHighlighter.tsx",
+  "components/publish/Stepper.tsx",
+  "components/publish/SubdomainInput.tsx",
+  "components/publish/PreviewPane.tsx",
+  "components/publish/DnsCard.tsx",
+  "components/publish/SuccessCard.tsx",
+  "components/dashboard/PageCard.tsx",
+  "components/ui/Button.tsx",
+  "components/ui/Input.tsx",
+  "components/ui/Tabs.tsx",
+  "styles/qa.css"
+]
+```

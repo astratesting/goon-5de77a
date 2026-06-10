@@ -7,20 +7,25 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnDashboard =
-        nextUrl.pathname.startsWith("/dashboard") ||
-        nextUrl.pathname.startsWith("/generate") ||
-        nextUrl.pathname.startsWith("/onboard") ||
-        nextUrl.pathname.startsWith("/p/") ||
-        nextUrl.pathname.startsWith("/account") ||
-        nextUrl.pathname.startsWith("/api/pages") ||
-        nextUrl.pathname.startsWith("/api/subdomains");
+      const pathname = nextUrl.pathname;
 
-      if (isOnDashboard) {
+      const isProtected =
+        pathname.startsWith("/dashboard") ||
+        pathname.startsWith("/generate") ||
+        pathname.startsWith("/onboard") ||
+        pathname.startsWith("/p/") ||
+        pathname.startsWith("/account") ||
+        pathname.startsWith("/preview/") ||
+        pathname.startsWith("/api/pages") ||
+        pathname.startsWith("/api/subdomains") ||
+        pathname.startsWith("/api/qa/") ||
+        pathname.startsWith("/api/publish/");
+
+      if (isProtected) {
         if (isLoggedIn) return true;
         return Response.redirect(
           new URL(
-            `/signin?returnTo=${encodeURIComponent(nextUrl.pathname)}`,
+            `/signin?returnTo=${encodeURIComponent(pathname)}`,
             nextUrl.origin
           )
         );
@@ -28,7 +33,7 @@ export const authConfig = {
 
       if (
         isLoggedIn &&
-        (nextUrl.pathname === "/signin" || nextUrl.pathname === "/signup")
+        (pathname === "/signin" || pathname === "/signup")
       ) {
         return Response.redirect(new URL("/dashboard", nextUrl.origin));
       }

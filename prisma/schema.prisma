@@ -8,11 +8,12 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(uuid()) @db.Uuid
-  email         String   @unique
-  passwordHash  String   @map("password_hash")
-  badgeEnabled  Boolean  @default(true) @map("badge_enabled")
-  createdAt     DateTime @default(now()) @map("created_at")
+  id               String   @id @default(uuid()) @db.Uuid
+  email            String   @unique
+  passwordHash     String   @map("password_hash")
+  badgeEnabled     Boolean  @default(true) @map("badge_enabled")
+  createdAt        DateTime @default(now()) @map("created_at")
+  claimedSubdomain String?  @unique @map("claimed_subdomain")
 
   pages Page[]
 
@@ -24,9 +25,13 @@ model Page {
   userId        String   @map("user_id") @db.Uuid
   title         String   @default("Untitled page")
   prompt        String
+  tone          String   @default("friendly")
   status        String   @default("draft")
   html          String?
+  css           String?
   sectionsJson  Json?    @map("sections_json")
+  meta          Json?
+  version       Int      @default(1)
   qaScore       Int?     @map("qa_score")
   qaReportJson  Json?    @map("qa_report_json")
   subdomain     String?
@@ -35,9 +40,54 @@ model Page {
   updatedAt     DateTime @updatedAt @map("updated_at")
   error         String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subdomainRec  Subdomain?
+  publishRecords PublishRecord[]
+  qaResults     QAResult[]
 
   @@index([userId, updatedAt(sort: Desc)])
   @@index([subdomain], map: "page_subdomain_unique")
   @@map("pages")
+}
+
+model Subdomain {
+  id        String   @id @default(uuid()) @db.Uuid
+  pageId    String   @unique @map("page_id") @db.Uuid
+  host      String   @unique
+  isCustom  Boolean  @default(false) @map("is_custom")
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@map("subdomains")
+}
+
+model PublishRecord {
+  id              String   @id @default(uuid()) @db.Uuid
+  pageId          String   @map("page_id") @db.Uuid
+  publishedAt     DateTime @default(now()) @map("published_at")
+  publishedVersion Int     @map("published_version")
+  dnsRecords      Json?    @map("dns_records")
+
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId])
+  @@map("publish_records")
+}
+
+model QAResult {
+  id         String   @id @default(uuid()) @db.Uuid
+  pageId     String   @map("page_id") @db.Uuid
+  version    Int
+  overall    Int
+  band       String
+  categories Json
+  suggestions Json
+  scannedAt  DateTime @default(now()) @map("scanned_at")
+
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId, scannedAt(sort: Desc)])
+  @@map("qa_results")
 }

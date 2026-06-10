@@ -31,10 +31,12 @@ export default async function EditorPage({
         prompt: page.prompt,
         status: page.status,
         html: page.html || "",
-        sectionsJson: (page.sectionsJson as unknown as Array<{ id: string; type: string; content: Record<string, string> }>) || [],
+        sectionsJson: (page.sectionsJson as unknown as Array<{ id: string; type: string; title: string; content: string | Record<string, string> }>) || [],
         qaScore: page.qaScore ?? null,
-        qaReportJson: (page.qaReportJson as unknown as { score: number; checks: Array<{ name: string; status: "pass" | "warn" | "fail"; value: string; detail: string; viewport?: string }>; ranAt: string }) || null,
+        qaReportJson: (page.qaReportJson as unknown as { score: number; checks: Array<{ name: string; status: "pass" | "warn" | "fail"; value: string; detail: string; viewport?: string }>; ranAt: string; breakdown: { layoutScore: number; mobileScore: number } }) || null,
         subdomain: page.subdomain ?? null,
+        createdAt: page.createdAt.toISOString(),
+        updatedAt: page.updatedAt.toISOString(),
       }}
     />
   );

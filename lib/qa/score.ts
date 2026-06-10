@@ -1,38 +1,16 @@
-import type { QACheck } from "./checks/layout";
-import type { MobileCheck } from "./checks/mobile";
+import type { QACategory } from "./types";
+import { CATEGORY_WEIGHTS, type CategoryId } from "./types";
 
-export interface QAReport {
-  score: number;
-  checks: Array<QACheck | MobileCheck>;
-  ranAt: string;
-  breakdown: {
-    layoutScore: number;
-    mobileScore: number;
-  };
-}
+export function computeScore(categories: QACategory[]): number {
+  let weightedSum = 0;
+  let totalWeight = 0;
 
-function checksToScore(checks: Array<QACheck | MobileCheck>): number {
-  let score = 100;
-  for (const check of checks) {
-    if (check.status === "fail") score -= 15;
-    else if (check.status === "warn") score -= 5;
+  for (const category of categories) {
+    const weight = CATEGORY_WEIGHTS[category.id as CategoryId] ?? 10;
+    weightedSum += category.score * weight;
+    totalWeight += weight;
   }
-  return Math.max(0, Math.min(100, score));
-}
 
-export function computeFinalScore(
-  layoutChecks: QACheck[],
-  mobileChecks: MobileCheck[]
-): QAReport {
-  const layoutScore = checksToScore(layoutChecks);
-  const mobileScore = checksToScore(mobileChecks);
-
-  const combined = Math.round(0.4 * layoutScore + 0.6 * mobileScore);
-
-  return {
-    score: combined,
-    checks: [...layoutChecks, ...mobileChecks],
-    ranAt: new Date().toISOString(),
-    breakdown: { layoutScore, mobileScore },
-  };
+  if (totalWeight === 0) return 0;
+  return Math.round(weightedSum / totalWeight);
 }

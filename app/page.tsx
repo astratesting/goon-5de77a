@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import PromptInput from "@/components/PromptInput";
+import { Smartphone, Eye, Rocket } from "lucide-react";
 
 export default function LandingPage() {
   const router = useRouter();
@@ -75,8 +76,38 @@ export default function LandingPage() {
           <span>Free to try, no card required</span>
         </div>
 
+        {/* Built-in QA section */}
+        <div className="pt-8 space-y-4">
+          <p className="text-center text-xs text-text-faint uppercase tracking-widest">
+            Built-in QA, before you publish
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="bg-ink-2 border border-border rounded-card p-4 space-y-2 text-center">
+              <div className="w-9 h-9 rounded-lg bg-indigo/10 flex items-center justify-center mx-auto">
+                <Smartphone size={16} className="text-indigo" />
+              </div>
+              <p className="text-sm font-medium text-text">Mobile-ready check</p>
+              <p className="text-xs text-text-faint">Tap targets, viewport, responsive CSS — scored automatically.</p>
+            </div>
+            <div className="bg-ink-2 border border-border rounded-card p-4 space-y-2 text-center">
+              <div className="w-9 h-9 rounded-lg bg-cyan/10 flex items-center justify-center mx-auto">
+                <Eye size={16} className="text-cyan" />
+              </div>
+              <p className="text-sm font-medium text-text">Live preview</p>
+              <p className="text-xs text-text-faint">See exactly what visitors will see at every screen size.</p>
+            </div>
+            <div className="bg-ink-2 border border-border rounded-card p-4 space-y-2 text-center">
+              <div className="w-9 h-9 rounded-lg bg-teal/10 flex items-center justify-center mx-auto">
+                <Rocket size={16} className="text-teal" />
+              </div>
+              <p className="text-sm font-medium text-text">One-click publish</p>
+              <p className="text-xs text-text-faint">Pick a subdomain, preview, publish. No DNS setup required.</p>
+            </div>
+          </div>
+        </div>
+
         {/* Footer */}
-        <footer className="text-center text-xs text-text-faint pt-8">
+        <footer className="text-center text-xs text-text-faint pt-4 pb-8">
           Built by the Goon team
         </footer>
       </div>

@@ -17,8 +17,11 @@ export default async function DashboardPage() {
       id: true,
       title: true,
       status: true,
+      html: true,
       qaScore: true,
+      qaReportJson: true,
       updatedAt: true,
+      createdAt: true,
       subdomain: true,
     },
   });
@@ -26,7 +29,10 @@ export default async function DashboardPage() {
   const serialized = pages.map((p) => ({
     ...p,
     updatedAt: p.updatedAt.toISOString(),
+    createdAt: p.createdAt.toISOString(),
+    html: p.html ?? null,
     qaScore: p.qaScore ?? null,
+    qaReportJson: p.qaReportJson as Record<string, unknown> | null,
     subdomain: p.subdomain ?? null,
   }));
 

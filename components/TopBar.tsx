@@ -1,56 +1,65 @@
 "use client";
 
-import { Search, Plus, User } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Search, Plus, User } from "lucide-react";
 
 interface TopBarProps {
   showSearch?: boolean;
   showNewPage?: boolean;
-  rightSlot?: React.ReactNode;
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
 }
 
-export default function TopBar({ showSearch = false, showNewPage = false, rightSlot }: TopBarProps) {
-  const [searchFocused, setSearchFocused] = useState(false);
+export default function TopBar({
+  showSearch = false,
+  showNewPage = true,
+  searchValue,
+  onSearchChange,
+}: TopBarProps) {
+  const router = useRouter();
+  const [localSearch, setLocalSearch] = useState("");
+
+  const search = searchValue !== undefined ? searchValue : localSearch;
+  const setSearch = onSearchChange || setLocalSearch;
 
   return (
-    <header className="h-14 border-b border-border bg-ink flex items-center px-4 gap-4 shrink-0">
-      <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
-        <span className="text-base font-medium text-text tracking-tight">goon</span>
-      </Link>
+    <header className="h-12 border-b border-border bg-ink-2 flex items-center justify-between px-4 shrink-0">
+      <div className="flex items-center gap-4 flex-1">
+        <h2 className="text-sm font-semibold text-text">Pages</h2>
 
-      {showSearch && (
-        <div className="flex-1 max-w-md mx-auto">
-          <div className={`flex items-center gap-2 px-3 h-8 bg-ink-2 border rounded-input transition-all duration-120 ${searchFocused ? "border-indigo" : "border-border"}`}>
-            <Search size={14} className="text-text-faint shrink-0" />
+        {showSearch && (
+          <div className="relative max-w-[280px] flex-1">
+            <Search
+              size={14}
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-faint pointer-events-none"
+            />
             <input
-              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               placeholder="Search pages..."
-              className="flex-1 bg-transparent text-sm text-text placeholder:text-text-faint outline-none"
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => setSearchFocused(false)}
+              className="w-full h-8 pl-8 pr-3 bg-ink-3 border border-border rounded-input text-xs text-text placeholder:text-text-faint focus:border-indigo/50 transition-colors"
             />
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      <div className="flex items-center gap-2 ml-auto">
+      <div className="flex items-center gap-3">
         {showNewPage && (
-          <Link
-            href="/generate"
-            className="inline-flex items-center gap-1.5 h-8 px-3 bg-indigo text-white text-sm font-medium rounded-input hover:brightness-110 transition-all duration-120"
+          <button
+            onClick={() => router.push("/generate")}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo hover:bg-indigo/90 text-white text-sm font-medium rounded-input transition-colors"
           >
             <Plus size={14} />
-            <span>New page</span>
-          </Link>
+            New page
+          </button>
         )}
-        {rightSlot}
-        <Link
-          href="/account"
-          className="flex items-center justify-center w-8 h-8 rounded-input bg-ink-2 border border-border text-text-dim hover:text-text hover:border-text-faint transition-all duration-120"
+        <button
+          onClick={() => router.push("/account")}
+          className="w-8 h-8 bg-ink-3 border border-border rounded-full flex items-center justify-center text-text-faint hover:text-text transition-colors"
         >
-          <User size={16} />
-        </Link>
+          <User size={14} />
+        </button>
       </div>
     </header>
   );
